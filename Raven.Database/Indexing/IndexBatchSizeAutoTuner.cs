@@ -1,30 +1,31 @@
 using System;
 using Raven.Database.Config;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Raven.Database.Indexing
 {
-	public class IndexBatchSizeAutoTuner
+	public class IndexBatchSizeAutoTuner : BaseBatchSizeAutoTuner
 	{
+<<<<<<< HEAD
 		private readonly WorkContext context;
 		private int numberOfItemsToIndexInSingleBatch;
 		
+=======
+>>>>>>> upstream/master
 		public IndexBatchSizeAutoTuner(WorkContext context)
+			: base(context)
 		{
-			this.context = context;
-			numberOfItemsToIndexInSingleBatch = context.Configuration.InitialNumberOfItemsToIndexInSingleBatch;
 		}
 
-		public int NumberOfItemsToIndexInSingleBatch
+		protected override int InitialNumberOfItems
 		{
-			get { return numberOfItemsToIndexInSingleBatch; }
-			set
-			{
-				context.CurrentNumberOfItemsToIndexInSingleBatch = numberOfItemsToIndexInSingleBatch = value;
-			}
+			get { return context.Configuration.InitialNumberOfItemsToIndexInSingleBatch; }
 		}
 
-		public void AutoThrottleBatchSize(int amountOfItemsToIndex, int size)
+		protected override int MaxNumberOfItems
 		{
+<<<<<<< HEAD
 			try
 			{
 				if (ReduceBatchSizeIfCloseToMemoryCeiling())
@@ -37,10 +38,14 @@ namespace Raven.Database.Indexing
 			{
 				context.Configuration.IndexingScheduler.LastAmountOfItemsToIndex = amountOfItemsToIndex;
 			}
+=======
+			get { return context.Configuration.MaxNumberOfItemsToIndexInSingleBatch; }
+>>>>>>> upstream/master
 		}
 
-		private void ConsiderIncreasingBatchSize(int amountOfItemsToIndex, int size)
+		protected override int CurrentNumberOfItems
 		{
+<<<<<<< HEAD
 			if (amountOfItemsToIndex < NumberOfItemsToIndexInSingleBatch)
 			{
 				return;
@@ -79,44 +84,21 @@ namespace Raven.Database.Indexing
 			}
 
 			
+=======
+			get { return context.CurrentNumberOfItemsToIndexInSingleBatch; }
+			set { context.CurrentNumberOfItemsToIndexInSingleBatch = value; }
+>>>>>>> upstream/master
 		}
 
-		private bool ReduceBatchSizeIfCloseToMemoryCeiling()
+		protected override int LastAmountOfItemsToRemember
 		{
-			if (MemoryStatistics.AvailableMemory >= context.Configuration.AvailableMemoryForRaisingIndexBatchSizeLimit)
-			{
-				// there is enough memory available for the next indexing run
-				return false;
-			}
-
-			// we are using too much memory, let us use a less next time...
-			// maybe it is us? we generate a lot of garbage when doing indexing, so we ask the GC if it would kindly try to
-			// do something about it.
-			// Note that this order for this to happen we need:
-			// * We had two full run when we were doing nothing but indexing at full throttle
-			// * The system is over the configured limit, and there is a strong likelihood that this is us causing this
-			// * By forcing a GC, we ensure that we use less memory, and it is not frequent enough to cause perf problems
-
-			GC.Collect(1, GCCollectionMode.Optimized);
-
-			// let us check again after the GC call, do we still need to reduce the batch size?
-
-			if (MemoryStatistics.AvailableMemory > context.Configuration.AvailableMemoryForRaisingIndexBatchSizeLimit)
-			{
-				// we don't want to try increasing things, we just hit the ceiling, maybe on the next try
-				return true;
-			} 
-
-			// we are still too high, let us reduce the size and see what is going on.
-
-			NumberOfItemsToIndexInSingleBatch = Math.Max(context.Configuration.InitialNumberOfItemsToIndexInSingleBatch,
-														 NumberOfItemsToIndexInSingleBatch / 2);
-
-			return true;
+			get { return context.Configuration.IndexingScheduler.LastAmountOfItemsToIndexToRemember; }
+			set { context.Configuration.IndexingScheduler.LastAmountOfItemsToIndexToRemember = value; }
 		}
 
-		private bool ConsiderDecreasingBatchSize(int amountOfItemsToIndex)
+		protected override void RecordAmountOfItems(int numberOfItems)
 		{
+<<<<<<< HEAD
 			if (amountOfItemsToIndex >= NumberOfItemsToIndexInSingleBatch)
 			{
 				// we had as much work to do as we are currently capable of handling
@@ -152,8 +134,14 @@ namespace Raven.Database.Indexing
 			{
 				GC.Collect(1, GCCollectionMode.Optimized);
 			}
+=======
+			context.Configuration.IndexingScheduler.RecordAmountOfItemsToIndex(numberOfItems);
+		}
+>>>>>>> upstream/master
 
-			return true;
+		protected override IEnumerable<int> GetLastAmountOfItems()
+		{
+			return context.Configuration.IndexingScheduler.GetLastAmountOfItemsToIndex();
 		}
 	}
 }

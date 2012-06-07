@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #if !NET_3_5
 using System;
 using Raven.Abstractions.Data;
@@ -20,4 +21,33 @@ namespace Raven.Client.Document.Batches
 		IDisposable EnterContext();
 	}
 }
+=======
+#if !NET_3_5
+using System;
+using Raven.Abstractions.Data;
+#if !SILVERLIGHT
+using Raven.Client.Connection;
+using Raven.Client.Shard;
+#endif
+
+namespace Raven.Client.Document.Batches
+{
+	public interface ILazyOperation
+	{
+		GetRequest CraeteRequest();
+		object Result { get;  }
+		bool RequiresRetry { get; }
+		void HandleResponse(GetResponse response);
+#if !SILVERLIGHT
+		void HandleResponses(GetResponse[] responses, ShardStrategy shardStrategy);
+#endif
+
+		IDisposable EnterContext();
+#if !SILVERLIGHT
+		object ExecuteEmbedded(IDatabaseCommands commands);
+		void HandleEmbeddedResponse(object result);
+#endif
+	}
+}
+>>>>>>> upstream/master
 #endif

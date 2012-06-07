@@ -34,6 +34,7 @@ namespace Raven.Database.Indexing
 			currentScorer = scorer;
 		}
 		
+<<<<<<< HEAD
 		public override void Collect(int doc)
 		{
 			var document = currentReader.Document(currentBase + doc);
@@ -46,6 +47,21 @@ namespace Raven.Database.Indexing
 				value.Count++;
 				value.Score += currentScore;
 			}
+=======
+		public override void Collect(int doc)
+		{
+			//Don't need to add the currentBase here, it's already accounted for
+			var document = currentReader.Document(doc);
+			var key = document.Get(Constants.DocumentIdFieldName) ?? document.Get(Constants.ReduceKeyFieldName);
+			var currentScore = currentScorer.Score();
+
+			SubQueryResult value;
+			if (results.TryGetValue(key, out value))
+			{
+				value.Count++;
+				value.Score += currentScore;
+			}
+>>>>>>> upstream/master
 		}
 
 		public override void SetNextReader(IndexReader reader, int docBase)
